@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("./models/UserModel");
+require('dotenv').config();
 
 const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -10,7 +11,7 @@ const authMiddleware = async (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, "SECRET_KEY");
+    const decoded = jwt.verify(token, process.env.JWT_KEY);
     const user = await User.findById(decoded.userId).select("-password");
     if (!user) {
       return res.status(401).json({ message: "User not found" });

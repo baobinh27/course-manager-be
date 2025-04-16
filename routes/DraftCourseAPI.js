@@ -95,23 +95,6 @@ router.delete("/delete/:courseId", authMiddleware, async (req, res) => {
     }
 });
 
-// User get a draft course by courseId
-router.get("/:courseId", authMiddleware, async (req, res) => {
-    try {
-        const { courseId } = req.params;
-        const userId = req.user._id;
-        const draftCourse = await DraftCourses.findOne({ courseId, userId });
-        if (!draftCourse) {
-            return res.status(404).json({ message: "Draft course not found!" });
-        }
-        res.status(200).json(draftCourse);
-    }
-    catch (error) {
-         console.error("Error fetching draft course:", error);
-         res.status(500).json({ message: "Server error!" });
-    }
-});
-
 // User get all user's draft courses       
 router.get("/all", authMiddleware, async (req, res) => {
     try {
@@ -198,6 +181,23 @@ router.post("/reject/:courseId", async (req, res) => {
     }
     catch (error) {
          console.error("Error rejecting draft course:", error);
+         res.status(500).json({ message: "Server error!" });
+    }
+});
+
+// User get a draft course by courseId
+router.get("/:courseId", authMiddleware, async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const userId = req.user._id;
+        const draftCourse = await DraftCourses.findOne({ courseId, userId });
+        if (!draftCourse) {
+            return res.status(404).json({ message: "Draft course not found!" });
+        }
+        res.status(200).json(draftCourse);
+    }
+    catch (error) {
+         console.error("Error fetching draft course:", error);
          res.status(500).json({ message: "Server error!" });
     }
 });

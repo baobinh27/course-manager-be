@@ -3,6 +3,7 @@ const router = express.Router();
 const Courses = require("../models/CourseModel");
 const authMiddleware = require("../authMiddleware");
 const User = require("../models/UserModel");
+const Authentication = require("../auth/Authentication")
 
 
 // API COURSE:  /api/course
@@ -19,23 +20,7 @@ const User = require("../models/UserModel");
 
 // User delete a created course: DELETE /delete/:courseId (courseId)
 // User update a created course: PUT /update/:courseId (courseId)
-   
 
-// get course by courseId
-router.get("/:courseId", async (req, res) => {
-    try {
-         const { courseId } = req.params;
-         const course = await Courses.findOne({ courseId });
-         if (!course) {
-             return res.status(404).json({ message: "Course not found!" });
-         }
-         res.status(200).json(course);
-    }
-    catch (error) {
-         console.error("Error getting course:", error);
-         res.status(500).json({ message: "Server error!" });
-    }
-});
 
 // get all courses
 router.get("/", async (req, res) => {
@@ -50,7 +35,50 @@ router.get("/", async (req, res) => {
             console.error("Error getting courses:", error);
             res.status(500).json({ message: "Server error!" });
         }
-    });
+});
+
+// User get all created courses by user
+router.get("/myCreatedCourse", authMiddleware, async (req, res) => {
+    try {
+        const user = req.user;
+        const auth = new Authentication(user);
+        if (!auth.logined()) {
+            return res.status(403).json({ message: "No permission!!" });
+        }
+        if (user){
+            return res.status(200).json(user.createdCourses);
+        }
+        else {
+            return res.status(404).json({ message: "User not found!" });
+        }
+    }
+    catch (error) {
+        console.error("Error getting created courses:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
+
+// User get all enrolled courses by user
+router.get("/myEnrolledCourse", authMiddleware, async (req, res) => {
+    try {
+        const user = req.user;
+        const auth = new Authentication(user);
+
+        if (!auth.logined()) {
+            return res.status(403).json({ message: "No permission!!" });
+        }
+        if (user){
+            return res.status(200).json(user.ownedCourses);
+        }
+        else {
+            return res.status(404).json({ message: "User not found!" });
+        }
+    }
+    catch (error) {
+        console.error("Error getting enrolled courses:", error);
+        res.status(500).json({ message: "Server error!" });
+    }
+});
 
 // get courses by tags
 router.get("/tags/:tag", async (req, res) => {
@@ -97,49 +125,6 @@ router.get("/author/:author", async (req, res) => {
     catch (error) {
          console.error("Error getting courses:", error);
          res.status(500).json({ message: "Server error!" });
-    }
-});
-
-// User get all created courses by user
-router.get("/myCreatedCourse", authMiddleware, async (req, res) => {
-    try {
-        const user = req.user;
-        const auth = new Authentication(user);
-        if (!auth.logined()) {
-            return res.status(403).json({ message: "No permission!!" });
-        }
-        if (user){
-            return res.status(200).json(user.createdCourses);
-        }
-        else {
-            return res.status(404).json({ message: "User not found!" });
-        }
-    }
-    catch (error) {
-        console.error("Error getting created courses:", error);
-        res.status(500).json({ message: "Server error!" });
-    }
-});
-
-// User get all enrolled courses by user
-router.get("/myEnrolledCourse", authMiddleware, async (req, res) => {
-    try {
-        const user = req.user;
-        const auth = new Authentication(user);
-
-        if (!auth.logined()) {
-            return res.status(403).json({ message: "No permission!!" });
-        }
-        if (user){
-            return res.status(200).json(user.ownedCourses);
-        }
-        else {
-            return res.status(404).json({ message: "User not found!" });
-        }
-    }
-    catch (error) {
-        console.error("Error getting enrolled courses:", error);
-        res.status(500).json({ message: "Server error!" });
     }
 });
 
@@ -253,6 +238,22 @@ router.put("/update/:courseId", authMiddleware, async (req, res) => {
     } catch (error) {
         console.error("Error updating course:", error);
         res.status(500).json({ message: "Server error!" });
+    }
+});
+
+// get course by courseId
+router.get("/:courseId", async (req, res) => {
+    try {
+         const { courseId } = req.params;
+         const course = await Courses.findOne({ _id: courseId });
+         if (!course) {
+             return res.status(404).json({ message: "Course not found!" });
+         }
+         res.status(200).json(course);
+    }
+    catch (error) {
+         console.error("Error getting course:", error);
+         res.status(500).json({ message: "Server error!" });
     }
 });
 
